@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+var debug = require('debug')('HomeManager');
+var app = require('../app');
+var rooms = require("../model/room")();
+var config = require("../etc/config");
+var lightsMonitor = require("../lightsMonitor")(rooms);
+var io = require('../io')(rooms, config, lightsMonitor);
+
+//first check at app start
+lightsMonitor.checkAll();
+app.set('port', process.env.PORT || 3000);
+
+var server = app.listen(app.get('port'), function () {
+    debug('Express server listening on port ' + server.address().port);
+});
+
+io.attach(server);
+//lm.attach(server);
+
+module.exports = server;

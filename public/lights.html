@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+    <head>
+        <title>AutoHomation V. 0.0.1</title>
+        <link rel="stylesheet" type="text/css" media="screen" href="/css/eggplant/jquery-ui-1.9.2.custom.min.css"/>
+        <link rel="stylesheet" type="text/css" media="screen" href="/css/iPicture.css"/>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/js/jquery-1.11.1.js"></script>
+        <script type="text/javascript" src="/js/jquery-ui-1.9.2.custom.min.js"></script>
+        <script type="text/javascript" src="/js/roomsInit.js"></script>
+        <script type="text/javascript" src="/js/jquery.ipicture.js"></script>
+    </head>
+    <body>
+        <div id="iPicture" data-interaction="hover" style="float:  left">
+            <div id="rooms" class="ip_slide" style="width: 1138px;height: 584px;background-image: url('/images/pianta.png')">
+            </div>
+        </div>
+        <div id="logTitle" style="float: right; border: 1px solid">Log window
+            <div id="log"></div>
+        </div>
+        <script>
+            jQuery(document).ready(function () {
+                //using the HomeBuilder callback to know when rooms are completely loaded
+                var socket = io();
+                $("#rooms").HomeBuilder()
+                        .done(function (data) {
+                            $("#iPicture").iPicture({
+                                socket: socket,
+                                animation: true,
+                                animationBg: "bgblack",
+                                animationType: "ltr-slide"
+                            });
+                            return false;
+                        });
+
+                socket.on('toggleLight', function (room) {
+//                    var res = msg.split(":");
+                    var color = 'red';
+                    if (room.state == 1) {
+                        color = 'green';
+                    }
+                    $('#S' + room.name).css('background-color', color);
+                    $("div[room='" + room.name + "']").attr('data-button', "more" + color)
+                            .removeClass("morered moregreen")
+                            .addClass("more" + color);
+                    $('#log').html($('#log').html() + "<br />" + room.name + " : " + color);
+                });
+
+                socket.on('setLight', function (room) {
+                     var color = 'red';
+                    if (room.state == 1) {
+                        color = 'green';
+                    }
+                    $("div[room='" + room.name + "']").attr('data-button', "more" + color)
+                            .removeClass("morered moregreen")
+                            .addClass("more" + color);
+                    $('#log').html($('#log').html() + "<br />" + room.name + ":" + color);
+                });
+
+                socket.on('connect', function (s) {
+                    //here I go to call the light status poll
+                    socket.emit('lightStatus', "");
+                });
+            });
+        </script>
+    </body>
+</html>
